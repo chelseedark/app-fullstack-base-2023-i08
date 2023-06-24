@@ -8,8 +8,16 @@ body {
 main {
     flex: 1 0 auto;
 }
-.titulo{
+
+.violeta{
+    background-color: blueviolet;
+}
+.nombreDisp{
     color: brown;
     font-weight: bold;
-    font-size: large;
 }
+.fixed-action-btn{
+    top:auto;
+    margin-right: 1%;
+    margin-top: 3%;
+    }

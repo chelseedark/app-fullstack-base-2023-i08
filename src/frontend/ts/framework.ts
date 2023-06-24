@@ -1,27 +1,36 @@
-class Framework{
+ /*Clase para el manejo de solicitudes*/
 
-  public ejecutarBackEnd(method:string,url:string,callback:HttpResponse,data?:any) {
-    var xmlReq = new XMLHttpRequest();        
-    xmlReq.onreadystatechange = () => {
-        if (xmlReq.readyState == 4) {
-          if (xmlReq.status == 200) {
-            console.log("llego "+xmlReq.responseText)
-              callback.manejarRespueta(xmlReq.responseText);
-            } else {
-                alert("Error al buscar los datos!");
-            }
+class FrameWork {
+  public enviar_request(metodo: string, url: string, lister: ResponseLister, data?: any) {
+    const xmlHttp: XMLHttpRequest = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = () => {
+      if (xmlHttp.readyState === 4) {// 4 si todo OK
+        if (metodo === "GET") {
+          lister._solicitudes(xmlHttp.status, xmlHttp.responseText);
+        } else if (metodo === "POST") {
+          if (url.includes("/updateDevice/")) {
+            lister._actualizar_dispositivo(xmlHttp.status, xmlHttp.responseText);
+          } else if (url.includes("deleteDevice")) {
+            lister._eliminar_dispositivo(xmlHttp.status, xmlHttp.responseText);
+          } else if (url.includes("insertRow")) {
+            lister._agregar_dispositivo(xmlHttp.status, xmlHttp.responseText);
+          } else if (url.includes("loginUser")) {
+            lister._validar_usuario(xmlHttp.status, xmlHttp.responseText);
+          }
         }
-    }
-    xmlReq.open(method, url, true);
-    if (data != undefined) {
-      xmlReq.setRequestHeader("Content-Type", "application/json");
-      xmlReq.send(JSON.stringify(data));
-      
+      }
+    };
+
+    xmlHttp.open(metodo, url, true);
+    if (metodo === "POST") {
+      xmlHttp.setRequestHeader("Content-Type", "application/json");
+      xmlHttp.send(JSON.stringify(data));
     } else {
-      xmlReq.send();
+      xmlHttp.send();
     }
-    
-//
   }
 
+  public recoverElement(id: string): HTMLElement | null {
+    return document.getElementById(id);
+  }
 }

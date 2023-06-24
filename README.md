@@ -9,13 +9,13 @@ Web App Full Stack Base
 
 Este proyecto es una aplicación web fullstack que se ejecuta sobre el ecosistema `Docker`. Está compuesta por un compilador de `TypeScript` que te permite utilizar este superset de JavaScript para poder programar un `cliente web`. También tiene un servicio en `NodeJS` que te permite ejecutar código en backend y al mismo tiempo disponibilizar el código del cliente web para interactar con el servicio. Además tiene una `base de datos` MySQL que puede interactuar con el backend para guardar y consultar datos, y de manera adicional trae un `administrador` de base de datos para poder administrar la base en caso que lo necesites.
 
-La aplicación IoT de base que viene con este proyecto se encarga de crear una tabla llamada `Devices` en la base de datos, y la idea es que vos puedas desarrollar el código de backend y frontend que te permita controlar desde el navegador el estado de los devices de un hogar inteligente - *como pueden ser luces, TVs, ventiladores, persianas, enchufes y otros* - y almacenar los estados de cada uno en la base de datos. 
+La aplicación IoT de base que viene con este proyecto se encarga de crear dos tablas llamadas `Devices` y `Users` en la base de datos, se desarrolla el código de backend y frontend que te permite controlar desde el navegador el estado de los devices de un hogar inteligente - *como pueden ser lamparas,  persianas y otros* - y almacenar los estados de cada uno en la base de datos. 
 
-Realizando estas tareas vas a a tener una aplicación fullstack IoT del mundo real que utiliza tecnologías actuales en la que un backend es capaz de interactuar con una DB para cumplir con las peticiones de control que se le mandan desde el cliente web.
+Realizando estas tareas se tiene una aplicación fullstack IoT del mundo real que utiliza tecnologías actuales en la que un backend es capaz de interactuar con una DB para cumplir con las peticiones de control que se le mandan desde el cliente web.
 
-En esta imagen podés ver una posible implementación del cliente web que controla los artefactos del hogar.
+En esta imagen podés ver una la implementación del cliente web que controla los artefactos del hogar.
 
-![architecture](doc/webapp-example-1.png)
+![architecture](doc/principal.png)
 
 ## Comenzando 🚀
 
@@ -55,8 +55,6 @@ Si pudiste acceder al cliente web y al administrador significa que la aplicació
 
 </details>
 
-Continuá explorando el proyecto una vez que lo tengas funcionando.
-
 ## Configuraciones de funcionamiento 🔩
 
 Al crearse la aplicación se ejecutan los contenedores de Docker de cada servicio, se crea la base de datos y sus tablas. A continuación podés encontrar info si querés cambiar la estructura de la DB o bien sus configuraciones de acceso.
@@ -75,7 +73,7 @@ Si quisieras cambiar la contraseña, puertos, hostname u otras configuraciones d
 
 Al iniciar el servicio de la base de datos, si esta no está creada toma el archivo que se encuentra en `db/dumps/smart_home.sql` para crear la base de datos automáticamente.
 
-En ese archivo está la configuración de la tabla `Devices` y otras configuraciones más. Si quisieras cambiar algunas configuraciones deberías modificar este archivo y crear nuevamente la base de datos para que se tomen en cuenta los cambios.
+En ese archivo está la configuración de las tablas `Devices`, `Users` y otras configuraciones más. Si quisieras cambiar algunas configuraciones deberías modificar este archivo y crear nuevamente las bases de datos para que se tomen en cuenta los cambios.
 
 Tené en cuenta que la base de datos se crea con permisos de superusuario por lo que no podrías borrar el directorio con tu usuario de sistema, para eso debés hacerlo con permisos de administrador. En ese caso podés ejecutar el comando `sudo rm -r db/data` para borrar el directorio completo.
 
@@ -106,6 +104,7 @@ El servicio en **NodeJS** posee distintos endpoints para comunicarse con el clie
 ### La base de datos
 
 La base de datos se comunica con el servicio de NodeJS y permite almacenar el estado de los dispositivos en la tabla **Devices**. Ejecuta un motor **MySQL versión 5.7** y permite que la comunicación con sus clientes pueda realizarse usando usuario y contraseña en texto plano. En versiones posteriores es necesario brindar claves de acceso, por este motivo la versión 5.7 es bastante utilizada para fases de desarrollo.
+Adicionalmente la tabla `Users` contiene precargados los datos de dos usuarios con privilegios para ver y modificar los dispositivos controlados. Las identificaciones de los usuarios y sus resectivas clavees se pueden ver en el archivo smart_home.sql. 
 
 ### El administrador de la DB
 
@@ -142,11 +141,7 @@ En la siguiente ilustración podés ver cómo está organizado el proyecto para 
 │       └── index.html          # archivo principal del cliente HTML
 ├── docker-compose.yml          # archivo donde se aloja la configuracion completa
 ├── README.md                   # este archivo
-├── CHANGELOG.md                # archivo para guardar los cambios del proyecto
-├── LICENSE.md                  # licencia del proyecto
 ```
-
-> No olvides ir poniendo tus cambios en el archivo `CHANGELOG.md` a medida que avanzas en el proyecto.
 
 </details>
 
@@ -158,40 +153,179 @@ En esta sección podés ver los detalles específicos de funcionamiento del cód
 
 ### Agregar un dispositivo
 
-Completá los pasos para agregar un dispositivo desde el cliente web.
+Para ver, agregar o mofificar los dispositivos es primordial acceder como usuario registrado. Actualmente hay dos usuarios registrados, el usuario principal y el usuario invitado. Las claves de acceso respectivas se pueden ver en el archivo smart_home.sql.
+Si el acceso es exitoso se despliega la lista con los dispositivos registrados, también aparece el botón `Agregar un dispositivo nuevo`, al precionar el botón se despliega el menú para completar los datos del nuevo elemento como: nombre, descripción, tipo de control (on-off, dimmer) y tipo de dispositivo (lámpara, persiana). Una vez llenos los campos se agrega el dispositivo a la base de datos mediante el botón `Agregar`. Inmediantamente después de agregar el dispositivo se actualiza la lista de dispositivos en el panel principal.   
+
+![nuevo_dispositivo](doc/nuevo_dispositivo.png)
+### Modificar un dispositivo
+
+En caso que se desee modificar alguno de los parámetros de los dispositivos registrados, se hace click sobre el dispositivo deseado e inmediatamente se despliega el menú de configuración, se pueden modificar elementos como: nombre, descripción, tipo de control (on-off, dimmer) y tipo de dispositivo (lámpara, persiana), una vez realizados los cambios se guardan los cambios con el botón `ACTUALIZAR`. También se puede eliminar el dispositivo con el botón `BORRAR`.
+
+![modificar_dispositivo](doc/modificar_dispositivo.png)
+
+### Modificar un dispositivo
+
+Según el tipo de dispositivo el control puede ser on-off o modo dimmer. El valor del estado del control también se registra en la tabla. 
 
 ### Frontend
 
-Completá todos los detalles sobre cómo armaste el frontend, sus interacciones, etc.
+El frontend se implementa mediante la interacción de las rutinas de los siguientes archivos principalmete:
+- index.html: es la página principal del frontend, compuesto por la cabecera, el cuerpo y el pie de página. En el cuerpo del documento se muestra el menú de registro de usuario y una caja o panel que mostrará los dispositivos de ser el caso.
+- main.ts: en este archivo se encuentra la clase `Main` encargada de gestionar la comunicación con el servidor. El manejador de eventos y su correspondiente registo mediante las rutinas `handleEvent` y `addEventListener` respectivamente.
+- frameworks.ts: contiene la clase `FrameWork` con la que se implementa las solicitudes al servidor.
+- ResponseLister.ts: contiene la clase `ResponseLister`, esta clase establece una interfaz para la estructuración de las comunicaciones.  
 
 ### Backend
 
-Completá todos los detalles de funcionamiento sobre el backend, sus interacciones con el cliente web, la base de datos, etc.
+El backend se implementa mediante la interacción de las rutinas del archivo index.js, la estructura del documento es la siguiente:
+
+- Configuración e importaciones:
+    - Se define el puerto (PORT) en el que se ejecutará la aplicación.
+    - Se importa el módulo `express` y se crea una instancia de la aplicación (app).
+- Configuración de middlewares:
+    - express.json(): middleware que permite analizar y procesar datos en formato JSON en las solicitudes.
+    - express.static(): middleware para servir archivos estáticos desde un directorio específico.
+    - Función de validación de datos:
+
+- Rutas y controladores:
+    - /listDevices/: controlador para manejar la solicitud GET para listar los dispositivos desde la base de datos.
+    - /insertDevice: controlador para manejar la solicitud POST para insertar un nuevo dispositivo en la base de datos.
+    - /updateState: controlador para manejar la solicitud POST para actualizar el estado de un dispositivo existente en la base de datos.
+    - /updateDevice: controlador para manejar la solicitud POST para cambiar cualquier campo de un dispositivo existente en la base de datos.
+    - /deleteDevice: controlador para manejar la solicitud POST para eliminar un dispositivo de la base de datos.
+    - /loginUser: controlador para manejar la solicitud POST para validar las credenciales de un usuario.
+
+La aplicación se pone en escucha en el puerto especificado (PORT). 
 
 <details><summary><b>Ver los endpoints disponibles</b></summary><br>
 
 Completá todos los endpoints del backend con los metodos disponibles, los headers y body que recibe, lo que devuelve, ejemplos, etc.
 
-1) Devolver el estado de los dispositivos.
+1) Listar los dispositivos.
 
 ```json
 {
     "method": "get",
-    "request_headers": "application/json",
+    "request_headers": "listDevices",
     "request_body": "",
     "response_code": 200,
     "request_body": {
         "devices": [
             {
-                "id": 1,
-                "status": true,
-                "description": "Kitchen light"
+                "id":2,
+                "name":"Lampara 26",
+                "description":"Luz co",
+                "state":3,
+                "type":0,
+                "dimmable":1},
+                {"id":4,
+                "name":"Persiana 1",
+                "description":"Persiana living",
+                "state":4,
+                "type":1,
+                "dimmable":1},
+                {"id":11,
+                "name":"Persiana dormitorio",
+                "description":"pppp",
+                "state":10,
+                "type":1,
+                "dimmable":0
             }
         ]
     },
 }
 ``` 
+2) Agregar un dispositivo.
 
+```json
+{
+    "method": "post",
+    "request_headers": "insertDevices",
+    "response_code": 200,
+    "request_body": {
+        "dispositivo": [
+            {
+                "name":"Lampara 26",
+                "description":"Luz co",
+                "type":0,
+                "state":3,
+                "dimmable":0
+            }
+        ]
+    },
+}
+``` 
+3) Estado del dispositivo.
+
+```json
+{
+    "method": "post",
+    "request_headers": "updateState",
+    "response_code": 200,
+    "request_body": {
+        "dispositivo": [
+            {
+                "state":3,
+                "id":4
+            }
+        ]
+    },
+}
+``` 
+4) Modificar parámetros de un dispositivo.
+
+```json
+{
+    "method": "post",
+    "request_headers": "updateDevice",
+    "response_code": 200,
+    "request_body": {
+        "dispositivo": [
+            {
+                "name":"Lampara 26",
+                "description":"Luz co",
+                "type":0,
+                "state":3,
+                "dimmable":0,
+                "id":4
+            }
+        ]
+    },
+}
+``` 
+5) Borrar dispositivo.
+
+```json
+{
+    "method": "post",
+    "request_headers": "deleteDevice",
+    "response_code": 200,
+    "request_body": {
+        "dispositivo": [
+            {
+                "id":4
+            }
+        ]
+    },
+}
+``` 
+5) Validar usuario.
+
+```json
+{
+    "method": "post",
+    "request_headers": "loginUser",
+    "response_code": 200,
+    "request_body": {
+        "dispositivo": [
+            {
+                "username":invitado,
+                "password":invitado
+            }
+        ]
+    },
+}
+``` 
 </details>
 
 </details>

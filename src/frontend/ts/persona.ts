@@ -1,13 +1,14 @@
-class Persona {
-  public nombre:string;
-  public dni: number;
+class Persona{
+  public nombre: string;
+  private edad: number;
 
-  constructor(nombre: string) {
-   
-      this.nombre = nombre;
+
+  constructor(nombre: string, edad: number) {
+    this.nombre = nombre;
+    this.edad = edad;
   }
-  
-  public saludar() {
-      console.log("hola soy " + this.nombre);
+
+  public mostrar() :string {
+    return `Nombre =  ${this.nombre}  Edad= ${this.edad}`;
   }
 }

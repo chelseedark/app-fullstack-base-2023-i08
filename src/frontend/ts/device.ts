@@ -1,8 +1,10 @@
+/*En este archivo se pueden agregar más dispositivos y/o características*/
+/*Clase con los datos de los dispositivos*/
 class Device{
   public id: number;
-  public description: string;
   public name: string;
-  public state: boolean;
+  public description: string;
+  public state: number;
   public type: number;
+  public dimmable: boolean;
 }
-
